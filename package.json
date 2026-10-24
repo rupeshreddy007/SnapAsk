@@ -1,0 +1,15 @@
+{
+  "name": "snapask",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Select anything on screen, get an AI answer beside it. Chrome extension + macOS menu-bar app.",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test extension/test/unit.test.js",
+    "check": "node scripts/check-manifest.js extension",
+    "pack": "cd extension && ./pack.sh",
+    "harness": "python3 -m http.server 8765 --directory extension",
+    "screenshots": "node scripts/screenshots.js"
+  }
+}

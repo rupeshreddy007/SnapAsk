@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "SnapAsk \u2014 Ask AI about anything on screen",
+  "short_name": "SnapAsk",
+  "version": "1.0.0",
+  "description": "Press a shortcut, drag over any part of a page or video, get an instant answer. Your API key, your data, nothing stored.",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "SnapAsk (Alt+Shift+A to select an area directly)",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "capture": {
+      "suggested_key": {
+        "default": "Alt+Shift+A"
+      },
+      "description": "Select an area of the screen and ask"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

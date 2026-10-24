@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SnapAsk settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <img src="icons/icon128.png" alt="" class="logo">
+    <div>
+      <h1>SnapAsk</h1>
+      <p class="tag">Select anything on screen. Get an answer. Nothing else.</p>
+    </div>
+  </header>
+
+  <section class="banner" id="welcome" hidden>
+    <div class="banner-title">One-minute setup</div>
+    <ol class="steps">
+      <li>Pick a provider and paste an API key below.</li>
+      <li>Press <kbd id="kbd-shortcut">Alt+Shift+A</kbd> on any page, or click the SnapAsk icon.</li>
+      <li>Drag over the thing you are unsure about. That's it.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Provider <span class="sub">Your key stays in this browser and is only sent to the provider you choose.</span></h2>
+    <div class="seg" id="providers" role="tablist"></div>
+    <label class="field">
+      <span>API key <a id="keyUrl" href="#" target="_blank" rel="noopener">Get a key ↗</a></span>
+      <span class="keyrow">
+        <input id="apiKey" type="password" spellcheck="false" autocomplete="off" placeholder="">
+        <button id="toggleKey" class="ghost" type="button" title="Show key">👁</button>
+        <button id="connect" class="primary" type="button">Connect</button>
+      </span>
+    </label>
+    <div id="status" class="status"></div>
+  </section>
+
+  <section class="card">
+    <h2>Model</h2>
+    <label class="field">
+      <select id="model"></select>
+    </label>
+    <label class="field" id="customModelField" hidden>
+      <span>Custom model id</span>
+      <input id="customModel" type="text" spellcheck="false" placeholder="model-id">
+    </label>
+  </section>
+
+  <section class="card">
+    <h2>Answers</h2>
+    <div class="row">
+      <span class="label">Depth</span>
+      <div class="seg small" id="depth" role="radiogroup">
+        <button type="button" data-v="quick">Quick</button>
+        <button type="button" data-v="balanced">Balanced</button>
+        <button type="button" data-v="thorough">Thorough</button>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Mode</span>
+      <select id="defaultMode"></select>
+    </div>
+    <div class="row">
+      <span class="label">Video</span>
+      <label class="check"><input type="checkbox" id="autoPause"> Pause a playing video while the card is open</label>
+    </div>
+    <div class="row">
+      <span class="label">Language</span>
+      <input id="language" list="langs" placeholder="Auto (same as the content)">
+      <datalist id="langs">
+        <option value="auto">Auto</option><option value="English"></option><option value="Hindi"></option><option value="Telugu"></option>
+        <option value="Tamil"></option><option value="Spanish"></option><option value="French"></option><option value="German"></option>
+        <option value="Portuguese"></option><option value="Japanese"></option><option value="Chinese"></option><option value="Arabic"></option>
+      </datalist>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Site modes <span class="sub">Set from the popup on any site. Auto picks Explain, Code, Translate or a lecture mode from the page.</span></h2>
+    <ul id="siteModes" class="sites"></ul>
+    <p id="noSites" class="muted">No site overrides yet.</p>
+  </section>
+
+  <section class="card">
+    <h2>Shortcut</h2>
+    <div class="row">
+      <span class="label">Current</span>
+      <kbd id="shortcut" class="big">…</kbd>
+      <button id="changeShortcut" class="ghost" type="button">Change</button>
+    </div>
+    <p class="muted">Also: click the SnapAsk icon in the toolbar. Pin it for one-click access.</p>
+  </section>
+
+  <section class="card quiet">
+    <h2>Privacy</h2>
+    <ul class="muted tight">
+      <li>Screenshots are cropped in memory and sent only to the provider above. SnapAsk has no server.</li>
+      <li>Nothing is saved: no history, no images, no analytics.</li>
+      <li>SnapAsk only runs on a page when you trigger it, so it never asks for access to all your sites.</li>
+    </ul>
+  </section>
+
+  <footer class="muted">SnapAsk v<span id="ver"></span> · <a href="https://github.com/YOUR-GITHUB/snapask" target="_blank" rel="noopener">Open source · MIT</a></footer>
+</main>
+<div id="toast" class="toast" hidden>Saved</div>
+<script src="lib/providers.js"></script>
+<script src="lib/modes.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

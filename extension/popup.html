@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SnapAsk</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <img src="icons/icon48.png" alt="" class="logo">
+    <div class="titles"><div class="name">SnapAsk</div><div class="tag">Select anything. Get an answer.</div></div>
+    <a id="openOptions" class="icon" href="#" title="All settings">⚙</a>
+  </header>
+
+  <button id="capture" class="primary big">
+    <span class="ico">⌖</span>
+    <span class="txt"><b>Select an area</b><small id="shortcutHint">or press Alt+Shift+A on any page</small></span>
+  </button>
+  <div id="captureNote" class="note" hidden></div>
+
+  <section class="card">
+    <div class="row">
+      <span class="label">Provider</span>
+      <div class="seg" id="providers" role="tablist"></div>
+    </div>
+    <div class="row" id="keyRow">
+      <span class="label">Key</span>
+      <span id="keyStatus" class="status"></span>
+      <button id="addKey" class="ghost small" type="button">Add key</button>
+    </div>
+    <div class="row">
+      <span class="label">Model</span>
+      <select id="model"></select>
+    </div>
+    <div class="row">
+      <span class="label">Depth</span>
+      <div class="seg" id="depth" role="radiogroup">
+        <button type="button" data-v="quick">Quick</button>
+        <button type="button" data-v="balanced">Balanced</button>
+        <button type="button" data-v="thorough">Thorough</button>
+      </div>
+    </div>
+    <div class="row" id="siteRow" hidden>
+      <span class="label">This site</span>
+      <select id="siteMode"></select>
+    </div>
+    <div class="row">
+      <span class="label">Video</span>
+      <label class="switch"><input type="checkbox" id="autoPause"><span class="track"></span><span class="txt">Pause while asking</span></label>
+    </div>
+    <div class="row">
+      <span class="label">Language</span>
+      <input id="language" list="langs" placeholder="Auto">
+      <datalist id="langs">
+        <option value="auto">Auto</option><option value="English"></option><option value="Hindi"></option><option value="Telugu"></option>
+        <option value="Tamil"></option><option value="Spanish"></option><option value="French"></option><option value="German"></option>
+        <option value="Japanese"></option><option value="Chinese"></option>
+      </datalist>
+    </div>
+  </section>
+
+  <footer>
+    <span class="muted">Nothing stored. No server.</span>
+    <a id="openOptions2" href="#">All settings ↗</a>
+  </footer>
+</main>
+<div id="toast" class="toast" hidden>Saved</div>
+<script src="lib/providers.js"></script>
+<script src="lib/modes.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

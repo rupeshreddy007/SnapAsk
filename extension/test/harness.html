@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SnapAsk UI harness</title>
+<style>
+  body { margin: 0; font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #222; background: #fafafa; }
+  .page { max-width: 860px; margin: 0 auto; padding: 24px; }
+  .video { height: 300px; background: linear-gradient(135deg, #1f2937, #111827); border-radius: 12px; color: #fff; display: grid; place-items: center; font-size: 22px; margin: 16px 0; }
+  pre { background: #eef; padding: 12px; border-radius: 8px; }
+  .bar { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ddd; padding: 10px 24px; display: flex; gap: 10px; align-items: center; z-index: 5; }
+  button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #bbb; background: #fff; cursor: pointer; }
+  #log { font: 12px ui-monospace, monospace; color: #666; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button id="start">Start selection (simulates Alt+Shift+A)</button>
+  <label><input type="checkbox" id="fail"> simulate API key error</label>
+  <button id="selectText">Select paragraph text, then start</button>
+  <button id="playVideo">Play video</button>
+  <span id="vstate" style="font:12px monospace;color:#666"></span>
+  <span id="log"></span>
+</div>
+<div class="page">
+  <h1>A lecture page</h1>
+  <p>Some text with a doubt: the derivative of <b>x²</b> is 2x, but why does the chain rule apply when the inner function is e^(2x)?</p>
+  <div class="video"><video id="vid" muted playsinline style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video></div>
+  <pre>def fib(n):
+    return n if n &lt; 2 else fib(n-1) + fib(n-2)   # TypeError: 'NoneType' ... ?</pre>
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+</div>
+
+<script>
+// ---- fake chrome.* so content.js runs as a plain page script ----
+const listeners = [];
+const log = m => { document.getElementById('log').textContent = m; console.log('[harness]', m); };
+const ANSWER = `**Chain rule** applies because \`e^(2x)\` is a *composition*: outer \`e^u\`, inner \`u = 2x\`.
+
+1. Differentiate the outer: \`d/du e^u = e^u\`
+2. Multiply by the inner's derivative: \`d/dx (2x) = 2\`
+
+So the result is:
+
+\`\`\`text
+d/dx e^(2x) = 2·e^(2x)
+\`\`\`
+
+- The "2" is the inner derivative you'd miss without the rule.
+- For plain \`x²\` there is no inner function, so no extra factor.`;
+
+// Fake screenshot: a labelled grid so the crop can be checked visually.
+function fakeShot() {
+  const dpr = window.devicePixelRatio || 1;
+  const c = document.createElement('canvas'); c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+  const g = c.getContext('2d'); g.scale(dpr, dpr);
+  g.fillStyle = '#fafafa'; g.fillRect(0, 0, innerWidth, innerHeight);
+  // draw the actual DOM roughly: rects of elements
+  for (const e of document.querySelectorAll('.video, pre, h1, p')) {
+    const r = e.getBoundingClientRect();
+    g.fillStyle = e.classList.contains('video') ? '#1f2937' : e.tagName === 'PRE' ? '#eef' : '#fff';
+    g.fillRect(r.left, r.top, r.width, r.height);
+    g.fillStyle = e.classList.contains('video') ? '#fff' : '#222'; g.font = '14px sans-serif';
+    g.fillText(e.textContent.trim().slice(0, 60), r.left + 8, r.top + 20);
+  }
+  g.strokeStyle = 'rgba(200,0,0,.35)'; g.fillStyle = 'rgba(200,0,0,.8)'; g.font = '10px monospace';
+  for (let x = 0; x < innerWidth; x += 100) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, innerHeight); g.stroke(); g.fillText(x, x + 2, 10); }
+  for (let y = 0; y < innerHeight; y += 100) { g.beginPath(); g.moveTo(0, y); g.lineTo(innerWidth, y); g.stroke(); g.fillText(y, 2, y + 10); }
+  return c.toDataURL('image/png');
+}
+
+// A real <video> fed by a canvas so pause/resume can be tested.
+(function () {
+  const c = document.createElement('canvas'); c.width = 640; c.height = 240; const g = c.getContext('2d'); let t = 0;
+  function frame() { t++; g.fillStyle = '#1f2937'; g.fillRect(0, 0, 640, 240); g.fillStyle = '#fff'; g.font = '28px sans-serif';
+    g.fillText('▶ lecture: chain rule, example 3   t=' + t, 40, 130); requestAnimationFrame(frame); }
+  frame();
+  const v = document.getElementById('vid'); v.srcObject = c.captureStream(15);
+  const report = () => { document.getElementById('vstate').textContent = 'video ' + (v.paused ? 'PAUSED' : 'playing'); };
+  v.addEventListener('play', report); v.addEventListener('pause', report); report();
+  document.getElementById('playVideo').addEventListener('click', () => v.play());
+})();
+
+window.__opened = [];
+window.open = (url) => { window.__opened.push(url); log('window.open → ' + url.slice(0, 80)); return null; };
+if (navigator.clipboard) { navigator.clipboard.write = async items => { window.__clipTypes = items[0].types; log('clipboard write: ' + items[0].types.join(',')); }; }
+
+function fakeCropSync(rect) {
+  const dpr = window.devicePixelRatio || 1;
+  const src = document.createElement('canvas'); src.width = innerWidth * dpr; src.height = innerHeight * dpr;
+  const g = src.getContext('2d'); g.scale(dpr, dpr);
+  g.fillStyle = '#1f2937'; g.fillRect(0, 0, innerWidth, innerHeight);
+  g.fillStyle = '#fff'; g.font = '28px sans-serif'; g.fillText('▶ lecture: chain rule, example 3', rect.x + 60, rect.y + rect.h / 2);
+  const out = document.createElement('canvas'); out.width = Math.round(rect.w * dpr); out.height = Math.round(rect.h * dpr);
+  out.getContext('2d').drawImage(src, rect.x * dpr, rect.y * dpr, out.width, out.height, 0, 0, out.width, out.height);
+  return { dataUrl: out.toDataURL('image/png'), mediaType: 'image/png', width: out.width, height: out.height };
+}
+
+window.chrome = {
+  runtime: {
+    onMessage: { addListener: fn => listeners.push(fn) },
+    sendMessage: async msg => {
+      if (msg.type === 'snapask:capture') {
+        log(`capture rect=${JSON.stringify(msg.rect)} viewport=${JSON.stringify(msg.viewport)}`);
+        const image = new URLSearchParams(location.search).has('demo')
+          ? fakeCropSync(msg.rect)                       // headless screenshots: no async decode
+          : await self.SnapAskCrop.cropCapture(fakeShot(), msg.rect, msg.viewport);
+        window.__lastCrop = image;
+        return { image };
+      }
+      if (msg.type === 'snapask:openOptions') { log('openOptions called'); return; }
+    },
+    connect: () => {
+      const on = [], off = [];
+      const port = {
+        onMessage: { addListener: fn => on.push(fn) },
+        onDisconnect: { addListener: fn => off.push(fn) },
+        disconnect: () => { port.dead = true; },
+        postMessage: msg => {
+          log('ask: ' + msg.messages.length + ' message(s), image on first: ' + !!msg.messages[0].image);
+          window.__lastAsk = msg;
+          if (document.getElementById('fail').checked) {
+            setTimeout(() => on.forEach(f => f({ type: 'error', message: 'Your API key was rejected. Check it in SnapAsk settings.', code: 'auth' })), 300);
+            return;
+          }
+          const text = msg.messages.length > 1 ? 'Follow-up received: *' + msg.messages[msg.messages.length - 1].text + '*\n\nShort answer: yes.' : ANSWER;
+          let i = 0;
+          const tick = () => {
+            if (port.dead) return;
+            if (i >= text.length) { on.forEach(f => f({ type: 'done', stop: 'end_turn' })); return; }
+            const n = location.search.includes('fast') ? 120 : 3 + Math.floor(Math.random() * 6);
+            on.forEach(f => f({ type: 'delta', text: text.slice(i, i + n) })); i += n;
+            setTimeout(tick, 18);
+          };
+          setTimeout(tick, 500);
+        },
+      };
+      return port;
+    },
+  },
+};
+document.getElementById('start').addEventListener('click', () => {
+  listeners.forEach(fn => fn({ type: 'snapask:start', settings: {
+    provider: 'anthropic', providerName: 'Anthropic · Claude', model: 'claude-opus-5', modelLabel: 'Claude Opus 5',
+    autoPause: true, defaultMode: 'auto', siteModes: {},
+  } }, {}, () => {}));
+});
+// Headless screenshot support: ?demo=card|text runs a flow with no interaction.
+window.addEventListener('load', () => {
+  const demo = new URLSearchParams(location.search).get('demo');
+  if (!demo) return;
+  document.querySelector('.bar').style.display = 'none';
+  document.getElementById('vid').play().catch(() => {});
+  setTimeout(() => {
+    if (demo === 'text') { document.getElementById('selectText').click(); return; }
+    document.getElementById('start').click();
+    const sr = document.querySelector('snapask-root').shadowRoot, ovl = sr.querySelector('.ovl');
+    const fire = (type, x, y) => ovl.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, button: 0, pointerId: 1, bubbles: true }));
+    const r = document.querySelector('.video').getBoundingClientRect();
+    if (demo === 'overlay') { fire('pointerdown', r.left + 10, r.top + 10); fire('pointermove', r.right - 10, r.bottom - 10); return; }
+    fire('pointerdown', r.left + 10, r.top + 10); fire('pointermove', r.right - 10, r.bottom - 10); fire('pointerup', r.right - 10, r.bottom - 10);
+  }, 300);
+});
+document.getElementById('selectText').addEventListener('click', () => {
+  const p = document.querySelector('.page p');
+  window.getSelection().selectAllChildren(p);
+  setTimeout(() => document.getElementById('start').click(), 50);
+});
+</script>
+<script src="../lib/markdown.js"></script>
+<script src="../lib/modes.js"></script>
+<script src="../lib/crop.js"></script>
+<script src="../content.js"></script>
+</body>
+</html>

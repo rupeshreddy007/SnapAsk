@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Popup harness</title>
+<style>html,body{margin:0;height:100%;background:#888;display:grid;place-items:center}iframe{border:0;width:340px;height:420px;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4)}</style></head>
+<body><iframe id="f"></iframe>
+<script>
+const SHIM = `<script>
+  window.chrome = {
+    runtime: {
+      sendMessage: async msg => {
+        if (msg.type === 'snapask:getSettings') return { provider: 'anthropic', keys: { anthropic: 'sk-ant-x', openai: '', gemini: '' },
+          models: { anthropic: 'claude-opus-5', openai: 'gpt-5', gemini: 'gemini-2.5-flash' }, depth: 'balanced', language: 'auto', onboarded: true };
+        if (msg.type === 'snapask:captureCurrentTab') { console.log('[harness] capture requested'); return { ok: true }; }
+      },
+      openOptionsPage: () => console.log('[harness] openOptionsPage'),
+    },
+    storage: { local: { set: async v => console.log('[harness] saved', JSON.stringify(v.settings)) } },
+    commands: { getAll: async () => [{ name: 'capture', shortcut: 'Alt+Shift+A' }] },
+    tabs: { query: async () => [{ url: 'https://www.youtube.com/watch?v=abc' }] },
+  };
+  window.close = () => console.log('[harness] window.close()');
+<\/script>`;
+fetch('../popup.html').then(r => r.text()).then(html => {
+  document.getElementById('f').srcdoc = html.replace('<head>', '<head><base href="' + new URL('../', location.href) + '">' + SHIM);
+});
+</script></body></html>

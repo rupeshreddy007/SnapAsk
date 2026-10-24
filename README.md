@@ -2,7 +2,7 @@
 
 **Select anything on screen. Get an answer beside it. Nothing else.**
 
-[![CI](https://github.com/YOUR-GITHUB/snapask/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR-GITHUB/snapask/actions) ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Chrome MV3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4) ![macOS 13+](https://img.shields.io/badge/macOS-13%2B-black)
+[![CI](https://github.com/rupeshreddy007/snapask/actions/workflows/ci.yml/badge.svg)](https://github.com/rupeshreddy007/snapask/actions) ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Chrome MV3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4) ![macOS 13+](https://img.shields.io/badge/macOS-13%2B-black)
 
 A Chrome extension and a macOS menu-bar app that turn "I don't get this part of the video / page / code" into one gesture: press a shortcut, drag a box, read the streamed answer in a floating card next to the thing you selected. Follow up in the same card. Your own API key or Claude login, no server, nothing stored.
 
